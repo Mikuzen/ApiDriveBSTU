@@ -5,42 +5,34 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\File\FileStoreRequest;
 use App\Http\Resources\FileResource;
-use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Models\File;
-use Carbon\Carbon;
+use App\Models\User;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Facades\Image;
 
 class DiskController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
-        return FileResource::collection(File::with('link')->get());
+        return FileResource::collection(File::withTrashed()->with('link')->get());
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(FileStoreRequest $request)
     {
-        $filess = array();
-
-        if (!is_null(User::find($request->input('user_id'))) ) {
-            $dataRequest = $this->getDataRequest($request);
+        $validated = $request->validated();
+        $id = $validated['user_id'];
+        $files = [];
+        if ($user = User::findOrFail($id)) {
+           $dataRequest = $this->getDataRequest($request, $user->id);
 
             foreach ($dataRequest['files'] as $file) {
-                $dataForDB = $this->getDataForDB($dataRequest['user']->name, $file);
+                $dataForDB = $this->getDataForDB($user->name, $file);
 
-                if (!Storage::disk('public')->has('files/' . $dataRequest['user']->id
+                if (!Storage::disk('public')->has('files/' . $user->id
                     . '/' . $dataRequest['folder'] . '/resize')) {
-                    Storage::disk('public')->makeDirectory('files/' . $dataRequest['user']->id
+                    Storage::disk('public')->makeDirectory('files/' . $user->id
                         . '/' . $dataRequest['folder'] . '/resize');
                 }
 
@@ -51,7 +43,7 @@ class DiskController extends Controller
 
                 Storage::putFileAs($dataRequest['folderOriginal'], $file, $dataForDB['src']);
 
-                $file[] = File::create([
+               $files[] = File::create([
                     'user_id' => $dataRequest['user']->id,
                     'src' => $dataForDB['src'],
                     'ext' => $dataForDB['ext'],
@@ -61,67 +53,43 @@ class DiskController extends Controller
                     'folder' => $dataRequest['folder']
                 ]);
             }
-            return response()->json([
-                'success' => true,
-                'message' => 'File successfully uploaded.',
-                'files' => FileResource::collection($filess),
-            ]);
+
+            return FileResource::collection($files);
         }
+        else return response()->json(['message' => 'Пользователь не найден'], 404);
 
-        return response()->json([
-            'success' => false,
-            'message' => 'User not found.'
-        ]);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
+    public function show($file)
     {
-
+        return new FileResource(File::with('link')->findOrFail($file));
     }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param int $id
-     * @return \Illuminate\Http\Response
-     */
     public function update(Request $request, $id)
     {
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\Response
-     */
+
     public function destroy($id)
     {
         //
     }
 
-    private function getDataRequest($request)
+    private function getDataRequest($request, $user)
     {
-        $user = User::findOrFail($request->input('user_id'));
         $folder = Carbon::now()->toDateString();
-        $folderResize = public_path('storage/files/' . $user->id . '/' . $folder . '/resize');
-        $folderOriginal = 'public/files/' . $user->id . '/' . $folder;
-        $files = $request->file('files');;
+        $folderResize = public_path('storage/files/' . $user. '/' . $folder . '/resize');
+        $folderOriginal = public_path('/files/' . $user . '/' . $folder);
+        $files = $request->file('files');
+
+        return $folderOriginal;
 
         return [
-            'user' => $user,
             'folder' => $folder,
             'folderResize' => $folderResize,
             'folderOriginal' => $folderOriginal,
-            'files' => $files,
+            'files' => $files
         ];
     }
 
@@ -133,6 +101,7 @@ class DiskController extends Controller
         $size = round($size / 1024);
         $ext = $file->getClientOriginalExtension();
         $src = $user . Carbon::now()->timestamp . $title . '.' . $ext; //Carbon::now()->timestamp
+
         $type = $this->getType($mime);
 
         return [
@@ -142,20 +111,5 @@ class DiskController extends Controller
             'size' => $size,
             'type' => $type,
         ];
-    }
-
-    private function getType($mime) // KISS
-    {
-        $var = 'app';
-
-        if (in_array($mime, $this->imageMimes)) {
-            $var = 'image';
-        } elseif (in_array($mime, $this->videoMimes)) {
-            $var = 'video';
-        } elseif (in_array($mime, $this->audioMimes)) {
-            $var = 'audio';
-        }
-
-        return $var;
     }
 }

@@ -1,10 +1,11 @@
 <template>
-    <div class="w-25">
+    <div class="w-25 m-auto mt-3 text-center">
+        <h3>Добавление нового пользователя</h3>
         <div class="mb-3">
-            <input type="text" v-model="name" class="form-control" placeholder="Ваше имя">
+            <input type="text" v-model="name" class="form-control" placeholder="Имя пользователя">
         </div>
         <div class="mb-3">
-            <input type="email" v-model="email" class="form-control" placeholder="Ваша эл. почта">
+            <input type="email" v-model="email" class="form-control" placeholder="Эл. почта пользователя">
         </div>
         <div class="mb-3">
             <input type="password" v-model="password" class="form-control" placeholder="Пароль(мин. 8 символов)">

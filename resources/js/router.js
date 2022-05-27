@@ -8,22 +8,22 @@ export default new VueRouter({
 
     routes: [
         {
-            path: '/users',
+            path: '/admin/users',
             component: () => import('./components/User/Index'),
             name: 'user.index',
         },
         {
-            path: '/users/create',
+            path: '/admin/users/create',
             component: () => import('./components/User/Create'),
             name: 'user.create',
         },
         {
-            path: '/users/edit/:user',
+            path: '/admin/users/edit/:user',
             component: () => import('./components/User/Edit'),
             name: 'user.edit',
         },
         {
-            path: '/users/show/:user',
+            path: '/admin/users/show/:user',
             component: () => import('./components/User/Show'),
             name: 'user.show',
         },

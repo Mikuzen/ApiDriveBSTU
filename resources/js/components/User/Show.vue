@@ -19,17 +19,23 @@
                 {{ user.created_at}}
             </p>
             <p>
-                <input class="btn btn-primary" value="Изменить данные пользователя" style="white-space: normal">
-                <input class="btn btn-danger" value="Удалить пользователя">
+                <router-link :to="{ name: 'user.edit', params: { user: user.id } }">
+                    <input  class="btn btn-primary" value="Изменить данные пользователя" style="width: 250px">
+                </router-link>
+
+                <a href="#" @click.prevent="deleteUser(user.id)">
+                    <input class="btn btn-danger" value="Удалить пользователя">
+                </a>
             </p>
         </div>
         <h3><strong>Файлы пользователя</strong></h3>
-        <files :files="files"></files>
+        <files :initial-files="files"></files>
     </div>
 </template>
 
 <script>
 import Files from './Files';
+import router from "../../router";
 
 export default {
     name: "Show",
@@ -51,9 +57,16 @@ export default {
                 .then(res => {
                     this.user = res.data.data;
                     this.files = res.data.data.files
-                    console.log(this.files);
                 })
         },
+
+        deleteUser(user) {
+            axios.delete(`/api/V1/users/` + user)
+                .then(res => {
+                    router.push('user.index')
+                    alert('Пользователь был удален')
+                })
+        }
     },
 
     components: {

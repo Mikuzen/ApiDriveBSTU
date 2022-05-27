@@ -22,7 +22,7 @@ class FileResource extends JsonResource
             'size' => $this->size,
             'type' => $this->type,
             'private' => $this->private,
-            'created_at' => $this->created_at,
+            'deleted_at' => $this->deleted_at,
             'link' => new FileLinkResource($this->link),
         ];
     }

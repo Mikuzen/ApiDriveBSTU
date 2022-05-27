@@ -18,9 +18,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::apiResources([
-    'users' => UserController::class,
-    'files' => DiskController::class,
-]);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResources([
+        'users' => UserController::class,
+        'files' => DiskController::class,
+    ]);
+});
 
 
