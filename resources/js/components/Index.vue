@@ -11,13 +11,12 @@
                                 <span class="text-white">Пользователи</span>
                             </router-link>
                         </li>
-<!--                        <li class="mx-3">-->
-<!--                            <router-link :to="{ name: 'user.index' }" class=" link-dark">-->
-<!--                                <i class="bi-files text-white"></i>-->
-<!--                                <span class="text-white">Файлы</span>-->
-<!--                            </router-link>-->
-<!--                        </li>-->
-
+                        <li class="mx-3">
+                            <router-link :to="{ name: 'file.index' }" class=" link-dark">
+                                <i class="bi-files text-white"></i>
+                                <span class="text-white">Файлы</span>
+                            </router-link>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -34,7 +33,6 @@ import router from "../router";
 
 export default {
     name: "Index",
-
 }
 </script>
 

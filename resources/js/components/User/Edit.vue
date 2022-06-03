@@ -11,7 +11,7 @@
                 <label for="email">Почта </label>
                 <input type="email" v-model="user.email" id="email" class="form-control" placeholder="Ваша эл. почта">
             </div>
-            <div class="mb-3" v-if="user.id != 1">
+            <div class="mb-3" v-if="user.id !== 1">
                 <input type="radio" v-model="user.admin" value="0" name="admin" id="user">
                 <label for="user">Пользователь</label>
                 <input type="radio" value="1" v-model="user.admin" name="admin" id="admin">
@@ -54,7 +54,7 @@ export default {
                 name: this.user.name,
                 email: this.user.email,
                 admin: this.user.admin,
-            }).then(res => {
+            }).then(function (){
                 router.push({name: 'user.show', params: {user: this.$route.params.user}})
             })
         },

@@ -7,8 +7,6 @@ use App\Http\Requests\Api\User\UserUpdateRequest;
 use App\Http\Requests\Api\User\UserStoreRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 

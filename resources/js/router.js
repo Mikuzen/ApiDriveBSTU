@@ -27,5 +27,20 @@ export default new VueRouter({
             component: () => import('./components/User/Show'),
             name: 'user.show',
         },
+        {
+            path: '/admin/files',
+            component: () => import('./components/File/Index'),
+            name: 'file.index',
+        },
+        {
+            path: '/admin/files/create',
+            component: () => import('./components/File/Create'),
+            name: 'file.create',
+        },
+        {
+            path: '/admin/files/show/:file',
+            component: () => import('./components/File/Show'),
+            name: 'file.show',
+        },
     ]
 })

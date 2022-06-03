@@ -31,7 +31,7 @@ class FileStoreRequest extends FormRequest
         return [
             'user_id' => 'required|integer',
             'files' => 'required',
-            'files.*' => 'file|mimes:.' . implode(',', $this->allMimes)
+            'files.*' => 'max:2048|file|mimes:.' . implode(',', $this->allMimes),
         ];
     }
 }

@@ -1,7 +1,6 @@
 import Vue from "vue";
 import router from "./router";
 
-
 import Index from "./components/Index";
 
 require('./bootstrap');

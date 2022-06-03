@@ -1,7 +1,11 @@
 <template>
     <div>
-        <table class="table table-striped table-dark" style="border: 2px solid black">
-            <thead class="text-center">
+        <h1>Все пользователи Диск.БГТУ</h1>
+
+        <router-link :to="{ name: 'file.create' }" class="btn btn-success m-2">Добавить файл</router-link>
+
+        <table class="table table-hover text-center table-striped table-dark">
+            <thead>
             <tr>
                 <th>ID</th>
                 <th>Источник</th>
@@ -10,26 +14,34 @@
                 <th>Размер, КБайт</th>
                 <th>Тип файла</th>
                 <th>Доступ к файлу</th>
-                <th>Дата удаления</th>
+                <th>Файл удален</th>
                 <th><i class="bi-pencil-square text-primary"></i></th>
+                <th><i class="bi-trash-fill text-danger"></i></th>
             </tr>
             </thead>
-            <tbody class="text-center">
-            <tr v-for="file in displayedFiles">
-                <td>{{ file.id }}</td>
-                <td>{{ file.src }}</td>
-                <td>{{ file.ext }}</td>
-                <td>{{ file.title }}</td>
-                <td>{{ file.size }}</td>
-                <td>{{ file.type }}</td>
-                <td>{{ file.private ? 'Закрыт' : 'Открыт' }}</td>
-                <td>{{ file.deleted_at ? file.deleted_at : 'Файл не удален' }}</td>
-                <td>
-                    <router-link :to="{name: 'file.show', params: {file: file.id}}"><i
-                        class="bi-pencil-square text-primary"></i>
-                    </router-link>
-                </td>
-            </tr>
+            <tbody>
+            <template v-for="file in displayedFiles">
+                <tr>
+                    <td>{{ file.id }}</td>
+                    <td>{{ file.src }}</td>
+                    <td>{{ file.ext }}</td>
+                    <td>{{ file.title }}</td>
+                    <td>{{ file.size }}</td>
+                    <td>{{ file.type }}</td>
+                    <td>{{ file.private ? 'Да' : 'Нет' }}</td>
+                    <td>{{ file.deleted_at ? file.deleted_at : 'Файл не удален' }}</td>
+                    <td>
+                        <router-link :to="{ name: 'file.show', params: { file: file.id}}">
+                            <i class="bi-pencil-square"></i>
+                        </router-link>
+                    </td>
+                    <td>
+                        <a href="#" @click.prevent="deleteFile(file.id)">
+                            <i class="bi-trash-fill text-danger"></i>
+                        </a>
+                    </td>
+                </tr>
+            </template>
             </tbody>
         </table>
         <div class="w-50">
@@ -55,7 +67,7 @@
 
 <script>
 export default {
-    name: "Files",
+    name: "Index",
 
     data() {
         return {
@@ -72,26 +84,31 @@ export default {
         }
     },
 
-    props: {
-        initialFiles: {
-            type: Array,
-            default() {
-                return [];
-            },
-        },
+    created() {
+        this.getFiles()
     },
 
     watch: {
-        initialFiles() {
-            this.files = this.initialFiles;
-        },
-
         files() {
             this.setPages()
         }
     },
 
     methods: {
+        getFiles() {
+            axios.get('/api/V1/files')
+                .then(res => {
+                    this.files = res.data.data
+                })
+        },
+
+        deleteFile(file) {
+            axios.delete(`/api/V1/files/` + file)
+                .then(res => {
+                    this.getFiles()
+                })
+        },
+
         setPages() {
             let countOfPages = Math.ceil(this.files.length / this.perPage)
             for (let i = 1; i <= countOfPages; i++) {
@@ -106,23 +123,9 @@ export default {
             return files.slice(from, to);
         }
     }
-
 }
 </script>
 
 <style scoped>
-table {
-    border: 2px solid black;
-}
 
-th {
-    font-size: 12pt;
-}
-
-td {
-    border: 2px solid black;
-    text-align-all: center;
-    font-size: 10pt;
-    white-space: normal;
-}
 </style>
