@@ -2,8 +2,7 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
+use App\Models\User;
 use Tests\TestCase;
 
 class UserControllerTest extends TestCase
@@ -36,18 +35,64 @@ class UserControllerTest extends TestCase
 
     public function test_api_add_new_user()
     {
-        $response = $this->postJson('api/V1/users', [
-            'name' => 'Artuom',
-            'email' => 'artyom@email.ru',
-            'admin' => true,
-            'password' => '123123123',
-            'password_confirmation' => '123123123',
+        $password = $this->faker->password();
+
+        $user = [
+            'name' => $this->faker->name,
+            'email' => $this->faker->email,
+            'admin' => false,
+            'password' => $password,
+            'password_confirmation' => $password,
+        ];
+
+        $this->postJson('api/V1/users', $user)
+            ->assertStatus(201)
+            ->assertJsonStructure([
+                'data' => [
+                    'id',
+                    'name',
+                    'email',
+                    'admin',
+                    'password',
+                    'created_at',
+                    'files'
+                ]
+            ]);
+        $this->assertDatabaseHas('users', [
+            'name' => $user['name'],
+            'email' => $user['email'],
+            'admin' => $user['admin'],
+        ]);
+    }
+
+    public function test_api_show_user() {
+        $password = $this->faker->password;
+
+        $user = User::create([
+            'name' => $this->faker->name,
+            'email' => $this->faker->email,
+            'admin' => false,
+            'password' => $password,
+            'password_confirmation' => $password,
         ]);
 
-        $response
-            ->assertStatus(201)
-            ->assertJson([
-                'created_at' => true
+        $this->getJson('api/V1/users', ['user' => $user->id])
+            ->assertStatus(200)
+            ->assertExactJson([
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'admin' => $user->admin,
+                'password' => Hash::check($user->password, User::findOrFail()),
+                'created_at' => (string)$user->created_at,
             ]);
     }
+
+//    public function test_api_update_user() {
+//
+//    }
+//
+//    public function test_api_delete_user() {
+//
+//    }
 }
