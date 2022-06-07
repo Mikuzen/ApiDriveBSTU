@@ -7,6 +7,7 @@ use App\Http\Requests\Api\User\UserUpdateRequest;
 use App\Http\Requests\Api\User\UserStoreRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use http\Env\Response;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
@@ -45,6 +46,12 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        if(!$user){
+            return response()->json([
+                'message' => 'не найдено'
+            ], 404);
+        }
+
         if (Storage::disk('public')->has('files/' . $user->id)) {
             Storage::disk('public')->deleteDirectory('files/' . $user->id);
         }
@@ -54,6 +61,6 @@ class UserController extends Controller
         return response()->json([
             'success' => 'true',
             'message' => 'User has been deleted'
-        ]);
+        ], 204);
     }
 }

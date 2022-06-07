@@ -31,32 +31,34 @@ class DiskController extends Controller
         $filesList = [];
         if ($user && $files) {
             $dataRequest = $this->getDataRequest($user->id);
+
             foreach ($files as $file) {
 
-            $dataForDB = $this->getDataForDB($user->name, $file);
-            if (!Storage::disk('public')->has('files/' . $user->id
-                . '/' . $dataRequest['folder'] . '/resize')) {
-                Storage::disk('public')->makeDirectory('files/' . $user->id
-                    . '/' . $dataRequest['folder'] . '/resize');
-            }
+                $dataForDB = $this->getDataForDB($user->name, $file);
+//                dd(1);
+                if (!Storage::disk('public')->has('files/' . $user->id
+                    . '/' . $dataRequest['folder'] . '/resize')) {
+                    Storage::disk('public')->makeDirectory('files/' . $user->id
+                        . '/' . $dataRequest['folder'] . '/resize');
+                }
 
-            if ($dataForDB['type'] == 'image') {
-                Image::make($file)->resize(250, 250)
-                    ->save($dataRequest['folderResize'] . '/' . $dataForDB['src']);
-            }
+                if ($dataForDB['type'] == 'image') {
+                    Image::make($file)->resize(250, 250)
+                        ->save($dataRequest['folderResize'] . '/' . $dataForDB['src']);
+                }
 
-            Storage::putFileAs($dataRequest['folderOriginal'], $file, $dataForDB['src']);
+                Storage::putFileAs($dataRequest['folderOriginal'], $file, $dataForDB['src']);
 
-            $filesList[] = File::create([
-                'user_id' => $user->id,
-                'src' => $dataForDB['src'],
-                'ext' => $dataForDB['ext'],
-                'title' => $dataForDB['title'],
-                'size' => $dataForDB['size'],
-                'type' => $dataForDB['type'],
-                'private' => true,
-                'folder' => $dataRequest['folder']
-            ]);
+                $filesList[] = File::create([
+                    'user_id' => $user->id,
+                    'src' => $dataForDB['src'],
+                    'ext' => $dataForDB['ext'],
+                    'title' => $dataForDB['title'],
+                    'size' => $dataForDB['size'],
+                    'type' => $dataForDB['type'],
+                    'private' => true,
+                    'folder' => $dataRequest['folder']
+                ]);
             }
 
             return FileResource::collection($filesList);
