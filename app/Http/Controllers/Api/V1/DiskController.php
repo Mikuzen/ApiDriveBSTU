@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\File\FileStoreRequest;
 use App\Http\Resources\FileResource;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 use App\Models\File;
 use App\Models\User;
 use Illuminate\Support\Facades\Storage;
@@ -25,17 +24,21 @@ class DiskController extends Controller
 
     public function store(FileStoreRequest $request)
     {
+        if (!$request->hasFile('files')) {
+            return response()->json(['message' => 'File not found'], 404);
+        }
+
         $validated = $request->validated();
         $user = User::findOrFail($validated['user_id']);
-        $files = $request->file('files');
         $filesList = [];
-        if ($user && $files) {
+
+        if ($user) {
             $dataRequest = $this->getDataRequest($user->id);
 
-            foreach ($files as $file) {
+            foreach ($request->file('files') as $file) {
 
                 $dataForDB = $this->getDataForDB($user->name, $file);
-//                dd(1);
+
                 if (!Storage::disk('public')->has('files/' . $user->id
                     . '/' . $dataRequest['folder'] . '/resize')) {
                     Storage::disk('public')->makeDirectory('files/' . $user->id
@@ -63,17 +66,11 @@ class DiskController extends Controller
 
             return FileResource::collection($filesList);
         } else return response()->json(['message' => 'Пользователь не найден или файл не загружен'], 404);
-
     }
 
     public function show($file)
     {
         return new FileResource(File::withTrashed()->with('link')->findOrFail($file));
-    }
-
-    public function update(Request $request, $id)
-    {
-        //
     }
 
     public function destroy($id)
@@ -89,14 +86,14 @@ class DiskController extends Controller
 
         $file->forceDelete();
 
-        return response()->json(['message' => 'Файл был успешно удален'], 200);
+        return response()->json([], 204);
     }
 
     private function getDataRequest($user)
     {
         $folder = Carbon::now()->toDateString();
-        $folderResize = 'storage/files/' . $user . '/' . $folder . '/resize';
-        $folderOriginal = 'public/files/' . $user . '/' . $folder;
+        $folderResize = public_path('storage/files/' . $user . '/' . $folder . '/resize');
+        $folderOriginal = '/public/files/' . $user . '/' . $folder;
 
         return [
             'folder' => $folder,
@@ -111,7 +108,7 @@ class DiskController extends Controller
         $title = strstr($file->getClientOriginalName(), '.', true);
         $size = round($file->getSize() / 1024);
         $ext = $file->getClientOriginalExtension();
-        $src = $user . Carbon::now()->timestamp . $title . '.' . $ext;
+        $src = str_replace(' ','_',$user . Carbon::now()->timestamp . $title . '.' . $ext);
 
         $type = $this->getType($mime);
 

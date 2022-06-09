@@ -146,7 +146,7 @@ class UserControllerTest extends TestCase
 
     public function test_api_show_missing_user()
     {
-        $r = $this->getJson('api/V1/users/0')
+        $this->getJson('api/V1/users/0')
             ->assertNotFound()
             ->assertJsonStructure(['exception']);
     }
@@ -189,6 +189,56 @@ class UserControllerTest extends TestCase
             'email' => $user['email'],
             'admin' => $user['admin'],
         ])
+            ->assertStatus(422)
+            ->assertJsonStructure(['errors']);
+    }
+
+    public function test_api_store_not_valid_email_user()
+    {
+        $password = Str::random(10);
+
+        $user = [
+            'name' => $this->faker->name,
+            'email' => $this->faker->text,
+            'admin' => false,
+            'password' => $password,
+            'password_confirmation' => $password,
+        ];
+
+        $this->postJson('api/V1/users', $user)
+            ->assertStatus(422)
+            ->assertJsonStructure(['errors']);
+    }
+
+    public function test_api_store_password_less_than_min()
+    {
+        $password = Str::random(6);
+
+        $user = [
+            'name' => $this->faker->name,
+            'email' => $this->faker->text,
+            'admin' => false,
+            'password' => $password,
+            'password_confirmation' => $password,
+        ];
+
+        $this->postJson('api/V1/users', $user)
+            ->assertStatus(422)
+            ->assertJsonStructure(['errors']);
+    }
+
+    public function test_api_store_password_not_confirmation()
+    {
+        $password = Str::random(10);
+
+        $user = [
+            'name' => $this->faker->name,
+            'email' => $this->faker->text,
+            'admin' => false,
+            'password' => $password,
+        ];
+
+        $this->postJson('api/V1/users', $user)
             ->assertStatus(422)
             ->assertJsonStructure(['errors']);
     }
